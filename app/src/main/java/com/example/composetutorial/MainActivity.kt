@@ -1,7 +1,6 @@
 //Declaração de pacote do projeto:
 package com.example.composetutorial
 
-
 //Importação de componentes e bibliotecas:
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -21,7 +20,13 @@ import com.example.composetutorial.ui.theme.ComposeTutorialTheme
 import androidx.compose.foundation.border
 import androidx.compose.material3.MaterialTheme
 import android.content.res.Configuration
-
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 //Declaração da classe main,
 class MainActivity : ComponentActivity() {
@@ -32,18 +37,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             //Tema do material design criado no projeto:
             ComposeTutorialTheme {
-                //Manipulação de um buffer bruto que é gerenciado por um composer:
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    //Função de recebimento de texto e o uso para configuração do elemento de texto:
-                    MessageCard(Message("Android", "Jetpack Compose"))
-                }
+                Conversation(SampleData.conversationSample)
             }
         }
     }
 
     //Classe Message que tem como função guardar dados (por isso é uma data class), sendo eles o autor da mensagem (author) e o texto que ela enviou (body - corpo de texto)
     data class Message(val author: String, val body: String)
-
 
     //Anotação de criação de função que pode ter composição de componentes:
     @Composable
@@ -69,15 +69,20 @@ class MainActivity : ComponentActivity() {
             // Adicionando um espaço horizontal entre a imagem e a coluna
             Spacer(modifier = Modifier.width(8.dp))
 
+            // Acompanhando se a mensagem é expandida ou não nesta variável:
+            var isExpanded by remember { mutableStateOf(false) }
+
+
             //Adicionando uma coluna para organizar verticalmente os textos na tela:
-            Column {
+            Column(modifier = Modifier.clickable { isExpanded = !isExpanded }){
                 Text(
                     text = msg.author,
                     color = MaterialTheme.colorScheme.secondary,
                     style = MaterialTheme.typography.titleSmall
 
+
                 )
-                // Add a vertical space between the author and message texts
+                // Adicionando um espaço vertical entre o autor e os textos da mensagem
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Surface(shadowElevation = 1.dp) {
@@ -85,12 +90,34 @@ class MainActivity : ComponentActivity() {
 
                         text = msg.body,
                         modifier = Modifier.padding(all = 4.dp),
+                        maxLines = if (isExpanded) Int.MAX_VALUE else 1,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
         }
     }
+
+    //Anotação de criação de função que pode ter composição de componentes:
+    @Composable
+
+    //Função que processa apenas os elementos visíveis na tela:
+    /*
+    (apenas para anotação pessoal):
+     Neste snippet de código, é possível ver que a LazyColumn tem um elemento
+     items filho. Uma List é usada como parâmetro, e o lambda recebe um
+     parâmetro que chamamos de message, mas poderíamos ter dado qualquer
+     outro nome, que é uma instância da Message. Em resumo, essa lambda é
+     chamada para cada item da List fornecida.
+    * */
+    fun Conversation(messages: List<Message>) {
+        LazyColumn {
+            items(messages) { message ->
+                MessageCard(message)
+            }
+        }
+    }
+
 
     //Permite visualizar as funções de composição no Android Studio sem precisar criar e instalar o app em um emulador ou dispositvo Android:
     @Preview
@@ -118,5 +145,17 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    //Permite visualizar as funções de composição no Android Studio sem precisar criar e instalar o app em um emulador ou dispositvo Android:
+    @Preview
+
+    //Anotação de criação de função que pode ter composição de componentes:
+    @Composable
+    fun PreviewConversation() {
+        ComposeTutorialTheme {
+            Conversation(SampleData.conversationSample)
+        }
+    }
+
 }
 
